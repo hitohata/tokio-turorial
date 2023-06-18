@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 type Db = Arc<Mutex<HashMap<String, Bytes>>>;
+type SharededDb = Arc<Vec<Mutex<HashMap<String, Vec<u8>>>>>;
 
 #[tokio::main]
 async fn main() {
@@ -53,4 +54,14 @@ async fn process(socket: TcpStream, db: Db) {
 
         connection.write_frame(&response).await.unwrap();
     }
+}
+
+fn new_sharded_db(num_shareds: usize) -> SharededDb {
+    let mut db = Vec::with_capacity(num_shareds);
+    for _ in 0..num_shareds {
+        db.push(Mutex::new(HashMap::new()));
+    }
+
+    Arc::new(db)
+
 }
