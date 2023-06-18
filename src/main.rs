@@ -2,7 +2,7 @@ use tokio::net::{TcpListener, TcpStream};
 use mini_redis::{Connection, Frame};
 use bytes::Bytes;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 type Db = Arc<Mutex<HashMap<String, Bytes>>>;
 type SharededDb = Arc<Vec<Mutex<HashMap<String, Vec<u8>>>>>;
@@ -64,4 +64,11 @@ fn new_sharded_db(num_shareds: usize) -> SharededDb {
 
     Arc::new(db)
 
+}
+
+async fn increment_and_do_stuff(mutex: &Mutex<i32>) {
+    let mut lock: MutexGuard<i32> = mutex.lock().unwrap();
+    *lock += 1;
+
+    do_something_async().await;
 }
